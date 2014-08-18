@@ -51,7 +51,7 @@ static const CGFloat kMinImageScale = 1.0f;
 @property(nonatomic,assign) NSInteger imageIndex;
 @property(nonatomic,weak) UIImage * defaultImage;
 @property(nonatomic,assign) NSInteger initialIndex;
-
+@property(nonatomic,assign) BOOL  tap2Close;
 @property (nonatomic,weak) MHFacebookImageViewerOpeningBlock openingBlock;
 @property (nonatomic,weak) MHFacebookImageViewerClosingBlock closingBlock;
 
@@ -347,6 +347,10 @@ static const CGFloat kMinImageScale = 1.0f;
 
 #pragma mark - Showing of Done Button if ever Zoom Scale is equal to 1
 - (void)didSingleTap:(UITapGestureRecognizer*)recognizer {
+    if (_tap2Close) {
+        [self close:_doneButton];
+        return;
+    }
     if(_doneButton.superview){
         [self hideDoneButton];
     }else {
@@ -460,7 +464,8 @@ static const CGFloat kMinImageScale = 1.0f;
         imageViewerCell.transform = CGAffineTransformMakeRotation(M_PI_2);
         imageViewerCell.frame = CGRectMake(0,0,windowFrame.size.width, windowFrame.size.height);
         imageViewerCell.originalFrameRelativeToScreen = _originalFrameRelativeToScreen;
-        imageViewerCell.viewController = self;
+        imageViewerCell.viewController = self; 
+        imageViewerCell.tap2Close = _tap2Close;
         imageViewerCell.blackMask = _blackMask;
         imageViewerCell.rootViewController = _rootViewController;
         imageViewerCell.closingBlock = _closingBlock;
@@ -570,7 +575,7 @@ static const CGFloat kMinImageScale = 1.0f;
 @property(nonatomic,strong) MHFacebookImageViewerClosingBlock closingBlock;
 @property(nonatomic,weak) id<MHFacebookImageViewerDatasource> imageDatasource;
 @property(nonatomic,assign) NSInteger initialIndex;
-
+@property (nonatomic,assign) BOOL tap2Close;
 @end
 
 @implementation MHFacebookImageViewerTapGestureRecognizer
@@ -601,8 +606,22 @@ static const CGFloat kMinImageScale = 1.0f;
 
 
 - (void) setupImageViewerWithImageURL:(NSURL *)url onOpen:(MHFacebookImageViewerOpeningBlock)open onClose:(MHFacebookImageViewerClosingBlock)close{
+    [self setupImageViewerWithImageURL:url tap2Close:NO onOpen:open onClose:close];
+}
+
+- (void) setupImageViewer:(BOOL)tagToClose{
+    [self setupImageViewerWithCompletionWithTap2Close:tagToClose onOpen:nil onClose:nil];
+}
+
+- (void) setupImageViewerWithCompletionWithTap2Close:(BOOL)tag2Close onOpen:(MHFacebookImageViewerOpeningBlock)open onClose:(MHFacebookImageViewerClosingBlock)close{
+    [self setupImageViewerWithImageURL:nil tap2Close:tag2Close onOpen:open onClose:close];
+}
+
+- (void) setupImageViewerWithImageURL:(NSURL *)url tap2Close:(BOOL)tag2Close onOpen:(MHFacebookImageViewerOpeningBlock)open onClose:(MHFacebookImageViewerClosingBlock)close{
+    
     self.userInteractionEnabled = YES;
     MHFacebookImageViewerTapGestureRecognizer *  tapGesture = [[MHFacebookImageViewerTapGestureRecognizer alloc] initWithTarget:self action:@selector(didTap:)];
+    tapGesture.tap2Close = tag2Close;
     tapGesture.imageURL = url;
     tapGesture.openingBlock = open;
     tapGesture.closingBlock = close;
@@ -632,6 +651,7 @@ static const CGFloat kMinImageScale = 1.0f;
     
     MHFacebookImageViewer * imageBrowser = [[MHFacebookImageViewer alloc]init];
     imageBrowser.senderView = self;
+    imageBrowser.tap2Close = gestureRecognizer.tap2Close;
     imageBrowser.imageURL = gestureRecognizer.imageURL;
     imageBrowser.openingBlock = gestureRecognizer.openingBlock;
     imageBrowser.closingBlock = gestureRecognizer.closingBlock;
