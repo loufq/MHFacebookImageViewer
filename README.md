@@ -40,7 +40,7 @@ and then in your UIImageView after you set the Image just call the
 ### Single Image Support
 
 	- (void)  setupImageViewer;
-	
+	- (void) setupImageViewer:(BOOL)tapToClose;
 	- (void) setupImageViewerWithCompletionOnOpen:(MHFacebookImageViewerOpeningBlock)open onClose:(MHFacebookImageViewerClosingBlock)close;
 
 
@@ -73,6 +73,7 @@ or if you want to load other image (for example a hi-res version of that image)
 	   
 	    [imageView setImage:[UIImage imageNamed:[NSString stringWithFormat:@"%i.png",indexPath.row]]];
 	    imageView.contentMode = UIViewContentModeScaleAspectFill;
+	    //[imageView setupImageViewer:YES];//YES:tap2Close
 	    [imageView setupImageViewer];
 	    imageView.clipsToBounds = YES;
 	    return cell;
